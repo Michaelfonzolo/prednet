@@ -66,14 +66,19 @@ class PredNet(Recurrent):
                  LSTM_activation='tanh', LSTM_inner_activation='hard_sigmoid',
                  output_mode='error', extrap_start_time=None,
                  data_format=K.image_data_format(), **kwargs):
+
         self.stack_sizes = stack_sizes
         self.nb_layers = len(stack_sizes)
+
         assert len(R_stack_sizes) == self.nb_layers, 'len(R_stack_sizes) must equal len(stack_sizes)'
         self.R_stack_sizes = R_stack_sizes
+
         assert len(A_filt_sizes) == (self.nb_layers - 1), 'len(A_filt_sizes) must equal len(stack_sizes) - 1'
         self.A_filt_sizes = A_filt_sizes
+
         assert len(Ahat_filt_sizes) == self.nb_layers, 'len(Ahat_filt_sizes) must equal len(stack_sizes)'
         self.Ahat_filt_sizes = Ahat_filt_sizes
+
         assert len(R_filt_sizes) == (self.nb_layers), 'len(R_filt_sizes) must equal len(stack_sizes)'
         self.R_filt_sizes = R_filt_sizes
 
@@ -85,8 +90,11 @@ class PredNet(Recurrent):
 
         default_output_modes = ['prediction', 'error', 'all']
         layer_output_modes = [layer + str(n) for n in range(self.nb_layers) for layer in ['R', 'E', 'A', 'Ahat']]
-        assert output_mode in default_output_modes + layer_output_modes, 'Invalid output_mode: ' + str(output_mode)
+
+        assert output_mode in default_output_modes + layer_output_modes, \
+            'Invalid output_mode: ' + str(output_mode)
         self.output_mode = output_mode
+
         if self.output_mode in layer_output_modes:
             self.output_layer_type = self.output_mode[:-1]
             self.output_layer_num = int(self.output_mode[-1])
@@ -95,12 +103,16 @@ class PredNet(Recurrent):
             self.output_layer_num = None
         self.extrap_start_time = extrap_start_time
 
-        assert data_format in {'channels_last', 'channels_first'}, 'data_format must be in {channels_last, channels_first}'
+        assert data_format in {'channels_last', 'channels_first'}, \
+            'data_format must be in {channels_last, channels_first}'
         self.data_format = data_format
+
         self.channel_axis = -3 if data_format == 'channels_first' else -1
         self.row_axis = -2 if data_format == 'channels_first' else -3
         self.column_axis = -1 if data_format == 'channels_first' else -2
+
         super(PredNet, self).__init__(**kwargs)
+
         self.input_spec = [InputSpec(ndim=5)]
 
     def compute_output_shape(self, input_shape):
@@ -140,9 +152,12 @@ class PredNet(Recurrent):
         initial_states = []
         states_to_pass = ['r', 'c', 'e']
         nlayers_to_pass = {u: self.nb_layers for u in states_to_pass}
+
         if self.extrap_start_time is not None:
-           states_to_pass.append('ahat')  # pass prediction in states so can use as actual for t+1 when extrapolating
-           nlayers_to_pass['ahat'] = 1
+            # pass prediction in states so can use as actual for t+1 when extrapolating
+            states_to_pass.append('ahat')  
+            nlayers_to_pass['ahat'] = 1
+        
         for u in states_to_pass:
             for l in range(nlayers_to_pass[u]):
                 ds_factor = 2 ** l
@@ -182,19 +197,40 @@ class PredNet(Recurrent):
         for l in range(self.nb_layers):
             for c in ['i', 'f', 'c', 'o']:
                 act = self.LSTM_activation if c == 'c' else self.LSTM_inner_activation
-                self.conv_layers[c].append(Conv2D(self.R_stack_sizes[l], self.R_filt_sizes[l], padding='same', activation=act, data_format=self.data_format))
+                self.conv_layers[c].append(
+                    Conv2D(
+                        self.R_stack_sizes[l], 
+                        self.R_filt_sizes[l], 
+                        padding='same', 
+                        activation=act, 
+                        data_format=self.data_format))
 
             act = 'relu' if l == 0 else self.A_activation
-            self.conv_layers['ahat'].append(Conv2D(self.stack_sizes[l], self.Ahat_filt_sizes[l], padding='same', activation=act, data_format=self.data_format))
+            self.conv_layers['ahat'].append(
+                Conv2D(
+                    self.stack_sizes[l], 
+                    self.Ahat_filt_sizes[l], 
+                    padding='same', 
+                    activation=act, 
+                    data_format=self.data_format))
 
             if l < self.nb_layers - 1:
-                self.conv_layers['a'].append(Conv2D(self.stack_sizes[l+1], self.A_filt_sizes[l], padding='same', activation=self.A_activation, data_format=self.data_format))
+                self.conv_layers['a'].append(Conv2D(
+                    self.stack_sizes[l+1], 
+                    self.A_filt_sizes[l], 
+                    padding='same', 
+                    activation=self.A_activation, 
+                    data_format=self.data_format))
 
         self.upsample = UpSampling2D(data_format=self.data_format)
         self.pool = MaxPooling2D(data_format=self.data_format)
 
         self.trainable_weights = []
-        nb_row, nb_col = (input_shape[-2], input_shape[-1]) if self.data_format == 'channels_first' else (input_shape[-3], input_shape[-2])
+
+        nb_row, nb_col = (input_shape[-2], input_shape[-1]) \
+            if self.data_format == 'channels_first' \
+            else (input_shape[-3], input_shape[-2])
+
         for c in sorted(self.conv_layers.keys()):
             for l in range(len(self.conv_layers[c])):
                 ds_factor = 2 ** l
@@ -206,10 +242,14 @@ class PredNet(Recurrent):
                     nb_channels = self.stack_sizes[l] * 2 + self.R_stack_sizes[l]
                     if l < self.nb_layers - 1:
                         nb_channels += self.R_stack_sizes[l+1]
+
                 in_shape = (input_shape[0], nb_channels, nb_row // ds_factor, nb_col // ds_factor)
-                if self.data_format == 'channels_last': in_shape = (in_shape[0], in_shape[2], in_shape[3], in_shape[1])
+                if self.data_format == 'channels_last': 
+                    in_shape = (in_shape[0], in_shape[2], in_shape[3], in_shape[1])
+
                 with K.name_scope('layer_' + c + '_' + str(l)):
                     self.conv_layers[c][l].build(in_shape)
+
                 self.trainable_weights += self.conv_layers[c][l].trainable_weights
 
         self.states = [None] * self.nb_layers*3
@@ -225,7 +265,8 @@ class PredNet(Recurrent):
 
         if self.extrap_start_time is not None:
             t = states[-1]
-            a = K.switch(t >= self.t_extrap, states[-2], a)  # if past self.extrap_start_time, the previous prediction will be treated as the actual
+            # if past self.extrap_start_time, the previous prediction will be treated as the actual
+            a = K.switch(t >= self.t_extrap, states[-2], a) 
 
         c = []
         r = []
