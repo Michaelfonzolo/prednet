@@ -22,35 +22,89 @@ test_recordings = [('city', '2011_09_26_drive_0104_sync'), ('residential', '2011
 
 if not os.path.exists(DATA_DIR): os.mkdir(DATA_DIR)
 
+import platform
+system_name = platform.system()
+
+WINDOWS = 'Windows' in system_name
+
 # Download raw zip files by scraping KITTI website
-def download_data():
+def download_data(verbose=False):
     base_dir = os.path.join(DATA_DIR, 'raw/')
-    if not os.path.exists(base_dir): os.mkdir(base_dir)
+    if not os.path.exists(base_dir): 
+        os.mkdir(base_dir)
+
     for c in categories:
         url = "http://www.cvlibs.net/datasets/kitti/raw_data.php?type=" + c
         r = requests.get(url)
-        soup = BeautifulSoup(r.content)
+        soup = BeautifulSoup(r.content, "lxml")
         drive_list = soup.find_all("h3")
         drive_list = [d.text[:d.text.find(' ')] for d in drive_list]
-        print "Downloading set: " + c
+
+        if verbose: 
+            print "Downloading set: " + c
+        
         c_dir = base_dir + c + '/'
         if not os.path.exists(c_dir): os.mkdir(c_dir)
         for i, d in enumerate(drive_list):
-            print str(i+1) + '/' + str(len(drive_list)) + ": " + d
-            url = "http://kitti.is.tue.mpg.de/kitti/raw_data/" + d + "/" + d + "_sync.zip"
-            urllib.urlretrieve(url, filename=c_dir + d + "_sync.zip")
 
+            if verbose: 
+                print str(i+1) + '/' + str(len(drive_list)) + ": " + d
+
+            # Old: url = "http://kitti.is.tue.mpg.de/kitti/raw_data/" + d + "/" + d + "_sync.zip"
+            url = "https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/" + d + "/" + d + "_sync.zip"
+
+            # Old: http://kitti.is.tue.mpg.de/kitti/raw_data/2011_09_26_drive_0001/2011_09_26_drive_0001_sync.zip
+            # New: https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/2011_09_26_drive_0002/2011_09_26_drive_0002_sync.zip
+            
+            if verbose: 
+                print("url: " + url)
+            
+            if WINDOWS:
+                urllib.urlretrieve(url, filename=c_dir + d + "_sync.zip")
+            else:
+                # Yeah this doesn't work in general, only works if curl is installed *shrug*
+                os.system("curl -LO " + url + " -o " + "\"" + c_dir + d + "_sync.zip" + "\"")
 
 # unzip images
-def extract_data():
+def extract_data(verbose=False, stop_short=False):
+    if verbose: 
+        print("For c in categories...")
+
+    running = True
     for c in categories:
+        if not running and stop_short:
+            print("Exiting...")
+            break
+        
+        if verbose:
+            print("    category: +" + c)
+
         c_dir = os.path.join(DATA_DIR, 'raw/', c + '/')
+        
+        if verbose: 
+            print("    c_dir: + " + c_dir)
+
         _, _, zip_files = os.walk(c_dir).next()
+
+        if verbose: 
+            print("    Found zip-files. For f in zip_files...")
+
         for f in zip_files:
-            print 'unpacking: ' + f
+            
+            if verbose: 
+                print("        Unpacking: " + f)
+
             spec_folder = f[:10] + '/' + f[:-4] + '/image_03/data*'
             command = 'unzip -qq ' + c_dir + f + ' ' + spec_folder + ' -d ' + c_dir + f[:-4]
-            os.system(command)
+            
+            if verbose: 
+                print("        Executing: " + command)
+                
+            error = os.system(command)
+            if error:
+                running = False
+                break
+        print("\n")
 
 
 # Create image datasets.
@@ -94,6 +148,19 @@ def process_im(im, desired_sz):
 
 
 if __name__ == '__main__':
-    download_data()
-    extract_data()
+    
+    # Edit from Michael: Added some command line inputs for debugging purposes.
+    import sys
+    args = sys.argv
+
+    no_download = "--no-download" in args
+    no_extract = "--no-extract" in args
+    verbose = "--verbose" in args
+    stop_short = "--stop-short" in args
+
+    if not no_download:
+        download_data(verbose=verbose)
+    if not no_extract:
+        extract_data(verbose=verbose,
+                     stop_short=stop_short)
     process_data()
