@@ -20,16 +20,6 @@ from data_utils import SequenceGenerator
 from kitti_settings import *
 
 def main(verbose=False):
-    # Michael Ala 28/6/2018
-    # When using the Tensorflow backend, running the model throws an error saying "You must 
-    # feed a value for placeholder tensor 'dense_2_sample_weights' with dtype float and shape 
-    # [?]" (this is the last Dense layer in the model). 
-    # 
-    # According to https://github.com/keras-team/keras/issues/2310, a potential workaround is as follows:
-    if K._BACKEND == 'tensorflow':
-        from tensorflow import constant as tf_constant
-        K._LEARNING_PHASE = tf_constant(0)
-
 
     save_model = True  # if weights will be saved
     weights_file = os.path.join(WEIGHTS_DIR, 'prednet_kitti_weights.hdf5')  # where weights will be saved
@@ -81,7 +71,6 @@ def main(verbose=False):
 
     # Will have shape (batch_size, nt)
     errors_by_time = Flatten()(errors_by_time)
-
 
     # The output of this final layer is the weighted sum over time of the weighted
     # sums of the errors layer-by-layer, which is the final L_train function from
