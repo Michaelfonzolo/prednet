@@ -81,18 +81,57 @@ def main(verbose=False):
         trainable=False)(errors_by_time)
 
     model = Model(inputs=inputs, outputs=final_errors)
-    model.compile(loss='mean_absolute_error', optimizer='adam', sample_weight_mode='temporal')
+    model.compile(loss='mean_absolute_error', optimizer='adam')
 
     if verbose:
         model.summary()
 
+        # dense_2 = model.layers[-1]
+        # from pprint import pprint
+        # pprint(dir(dense_2))
+
+        # print("_initial_weights: ", dense_2._initial_weights)
+        # print("_losses: ", dense_2._losses)
+        # print("_per_input_losses: ", dense_2._per_input_losses)
+        # print("_per_input_updates: ", dense_2._per_input_updates)
+        # print("_trainable_weights: ", dense_2._trainable_weights)
+        # print("_updates: ", dense_2._updates)
+        # print("bias:", dense_2.bias)
+        # print("count_params: ", dense_2.count_params())
+        # print("config: ", dense_2.get_config())
+        # print("weights: ", dense_2.get_weights())
+        # print("losses: ", dense_2.losses)
+        # print("kernel: ", dense_2.kernel.name)
+        # print("trainable_weights: ", dense_2.trainable_weights)
+
+        # print("This is going to be interesting...")
+
+        # model._make_train_function()
+        # training_function = model.train_function
+
+        # print("Training Function: ", training_function)
+        # pprint(dir(training_function))
+
+        # print("_callable_fn: ", training_function._callable_fn)
+        # print("_feed_arrays: ", training_function._feed_arrays)
+        # print("_feed_symbols: ", training_function._feed_symbols)
+        # print("feed_dict: ", training_function.feed_dict)
+        # print("fetches: ", training_function.fetches)
+        # print("inputs: ", training_function.inputs)
+        # print("outputs: ", training_function.outputs)
+        # print("name: ", training_function.name)
+        # print("session_kwargs: ", training_function.session_kwargs)
+        # print("updates_op: ", training_function.updates_op)
+
     train_generator = SequenceGenerator(train_file, train_sources, nt, batch_size=batch_size, shuffle=True)
     val_generator = SequenceGenerator(val_file, val_sources, nt, batch_size=batch_size, N_seq=N_seq_val)
 
-    lr_schedule = lambda epoch: 0.001 if epoch < 75 else 0.0001    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
+    # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
+    lr_schedule = lambda epoch: 0.001 if epoch < 75 else 0.0001
     callbacks = [LearningRateScheduler(lr_schedule)]
     if save_model:
-        if not os.path.exists(WEIGHTS_DIR): os.mkdir(WEIGHTS_DIR)
+        if not os.path.exists(WEIGHTS_DIR): 
+            os.mkdir(WEIGHTS_DIR)
         callbacks.append(ModelCheckpoint(filepath=weights_file, monitor='val_loss', save_best_only=True))
 
     history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,

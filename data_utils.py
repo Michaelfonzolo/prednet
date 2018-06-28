@@ -80,16 +80,20 @@ class SequenceGenerator(Iterator):
         return X_all
 
     def _get_batches_of_transformed_samples(self, index_array):
+        # The first element of the tuple we're returning is the input batch,
+        # a set of sequences of self.nt consecutive images (where the indices 
+        # in the given index_array are elements of self.possible_starts, meaning 
+        # we never have the issue of fetching a batch of images that belong to
+        # two separate videos).
+        #
         # The second element of the tuple we're returning represents the labels
         # for each input image. The reason we send in zeros is because the outputs
         # of the model in kitti_train.py is the weighted sum over time, over each
         # layer, of the errors at that time-step and layer, which we wish to minimize,
         # so clearly the target for any input is zero.
-        
+
         X_batch = np.zeros((len(index_array), self.nt) + self.im_shape, np.float32)
         for i, index in enumerate(index_array):
             X_batch[i] = self.preprocess(self.X[index:index+self.nt])
 
-        return X_batch, None
-
-        #return self.X[index_array], None #np.zeros(len(index_array))
+        return X_batch, np.zeros(len(index_array))
