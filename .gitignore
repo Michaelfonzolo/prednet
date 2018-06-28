@@ -1,5 +1,7 @@
 # Ignore kitti_data folder
 kitti_data/
+kitti_results/
+model_data_keras2/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
