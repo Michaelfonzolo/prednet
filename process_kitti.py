@@ -138,6 +138,8 @@ def process_data(verbose=False):
 
         print('Creating ' + split + ' data: ' + str(len(im_list)) + ' images')
 
+        # Michael Ala: X is an awful name, why not just "image_data"?
+
         # X is an array of image data, each image being a 3-dimensional array of
         # dimensions (img_width) x (img_height) x 3 (colour channels).
         X = np.zeros((len(im_list),) + desired_im_sz + (3,), np.uint8)
@@ -151,6 +153,12 @@ def process_data(verbose=False):
 
         hkl.dump(X, os.path.join(DATA_DIR, 'X_' + split + '.hkl'))
         hkl.dump(source_list, os.path.join(DATA_DIR, 'sources_' + split + '.hkl'))
+
+        # For future reference, the way this works is that the image at index i
+        # in X corresponds to the source at index i in the source_list. Also, the
+        # source is the name of the category (i.e. "drive", "residential", or "road"),
+        # and the name of the folder, separated by a dash. For example,
+        # road-2011_09_26_drive_0027_sync
 
 
 # resize and crop image

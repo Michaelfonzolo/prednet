@@ -9,8 +9,14 @@ class SequenceGenerator(Iterator):
                  batch_size=8, shuffle=False, seed=None,
                  output_mode='error', sequence_start_mode='all', N_seq=None,
                  data_format=K.image_data_format()):
-        self.X = hkl.load(data_file)  # X.shape will be like (n_images, nb_cols, nb_rows, nb_channels)
-        self.sources = hkl.load(source_file) # source for each image so when creating sequences can assure that consecutive frames are from same video
+        
+        # X.shape will be (n_images, nb_cols, nb_rows, nb_channels)
+        # (after transposition if K.image_data_format() is 'channels_first')
+        self.X = hkl.load(data_file)
+
+        # source for each image so when creating sequences can assure that 
+        # consecutive frames are from same video
+        self.sources = hkl.load(source_file)
         self.nt = nt
         self.batch_size = batch_size
         self.data_format = data_format
@@ -24,7 +30,10 @@ class SequenceGenerator(Iterator):
         self.im_shape = self.X[0].shape
 
         if self.sequence_start_mode == 'all':  # allow for any possible sequence, starting from any frame
-            self.possible_starts = np.array([i for i in range(self.X.shape[0] - self.nt) if self.sources[i] == self.sources[i + self.nt - 1]])
+            self.possible_starts = np.array(
+                [i for i in range(self.X.shape[0] - self.nt) 
+                    if self.sources[i] == self.sources[i + self.nt - 1]])
+
         elif self.sequence_start_mode == 'unique':  #create sequences where each unique frame is in at most one sequence
             curr_location = 0
             possible_starts = []
@@ -42,6 +51,11 @@ class SequenceGenerator(Iterator):
             self.possible_starts = self.possible_starts[:N_seq]
         self.N_sequences = len(self.possible_starts)
         super(SequenceGenerator, self).__init__(len(self.possible_starts), batch_size, shuffle, seed)
+
+        # Michael Ala 28/6/2018: Not sure if this is how the original creator intended
+        # this to be used, but it's how I'm using it now, because the original implementation
+        # doesn't work anymore.
+        # self.X_all = self.create_all()
 
     def next(self):
         with self.lock:
@@ -64,3 +78,18 @@ class SequenceGenerator(Iterator):
         for i, idx in enumerate(self.possible_starts):
             X_all[i] = self.preprocess(self.X[idx:idx+self.nt])
         return X_all
+
+    def _get_batches_of_transformed_samples(self, index_array):
+        # The second element of the tuple we're returning represents the labels
+        # for each input image. The reason we send in zeros is because the outputs
+        # of the model in kitti_train.py is the weighted sum over time, over each
+        # layer, of the errors at that time-step and layer, which we wish to minimize,
+        # so clearly the target for any input is zero.
+        
+        X_batch = np.zeros((len(index_array), self.nt) + self.im_shape, np.float32)
+        for i, index in enumerate(index_array):
+            X_batch[i] = self.preprocess(self.X[index:index+self.nt])
+
+        return X_batch, None
+
+        #return self.X[index_array], None #np.zeros(len(index_array))
