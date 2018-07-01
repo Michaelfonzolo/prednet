@@ -29,8 +29,7 @@ def _vprint(verbose, string):
 desired_im_sz = (128, 160)
 categories = [
     'city',
-    # Michael Ala 6/25/2018: (hopefully) temporary, not enough space on Ubuntu partition
-    # 'residential', 
+    'residential', 
     'road'
     ]
 
@@ -82,7 +81,7 @@ def download_data(verbose=False):
 def extract_data(verbose=False, stop_short=False):
     _vprint(verbose, 'For c in categories...')
 
-    error = 0 # really just to prevent Intellisense from saying error is used before being defined.
+    error = 0
     for c in categories:
         if error and stop_short:
             _vprint(verbose, 'Received exit code ' + str(error))
