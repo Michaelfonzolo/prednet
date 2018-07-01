@@ -13,11 +13,19 @@ from bs4 import BeautifulSoup
 
 # Check scipy version for deprecated imread
 from scipy import __version__ as scipy_version
-if scipy_version >= '1.2.0':
+def _use_skimage():
     from skimage.io import imread
     from skimage.transform import resize as imresize
+    return imread, imresize
+if scipy_version >= '1.2.0':
+    imread, imresize = _use_skimage()
 else:
-    from scipy.misc import imread, imresize
+    try:
+        # I think there's an issue in Anaconda that prevents it from
+        # installing the proper submodules of scipy.
+        from scipy.misc import imread, imresize
+    except ImportError:
+        imread, imresize = _use_skimage()
 
 from kitti_settings import *
 
