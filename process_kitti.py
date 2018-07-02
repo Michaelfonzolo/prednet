@@ -55,7 +55,7 @@ if not os.path.exists(DATA_DIR):
 
 
 # Download raw zip files by scraping KITTI website
-def download_data(verbose=False):
+def download_data(verbose=False, skip_downloaded=False):
     base_dir = os.path.join(DATA_DIR, 'raw') + os.sep
     if not os.path.exists(base_dir): 
         os.mkdir(base_dir)
@@ -80,6 +80,11 @@ def download_data(verbose=False):
             # New: https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/2011_09_26_drive_0002/2011_09_26_drive_0002_sync.zip
             url = 'https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/' + d + '/' + d + '_sync.zip'
             _vprint(verbose, "url: " + url)
+
+            output_file = os.path.join(c_dir, d + '_sync.zip')
+            if os.path.exists(output_file) and skip_downloaded:
+                _vprint(verbose, "File already downloaded, skipping.")
+                continue
         
             # curl -L <url> -o --create-dirs ./kitti_data/raw/<category>/<name>.zip
             os.system('curl -L ' + url + ' -o ' + os.path.join(c_dir, d + '_sync.zip') + ' --create-dirs')
@@ -189,13 +194,14 @@ if __name__ == '__main__':
     import sys
     args = sys.argv
 
-    no_download = "--no-download" in args
-    no_extract  = "--no-extract"  in args
-    verbose     = "--verbose"     in args
-    stop_short  = "--stop-short"  in args
+    no_download     = "--no-download"     in args
+    no_extract      = "--no-extract"      in args
+    verbose         = "--verbose"         in args
+    stop_short      = "--stop-short"      in args
+    skip_downloaded = "--skip-downloaded" in args
 
     if not no_download:
-        download_data(verbose=verbose)
+        download_data(verbose=verbose, skip_downloaded=skip_downloaded)
     if not no_extract:
         extract_data(verbose=verbose, stop_short=stop_short)
     process_data(verbose=verbose)
