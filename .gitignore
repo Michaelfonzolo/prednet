@@ -2,6 +2,7 @@
 kitti_data/
 kitti_results/
 model_data_keras2/
+mmspg_drone_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
