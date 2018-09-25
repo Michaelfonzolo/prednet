@@ -82,6 +82,7 @@ def download_data(verbose=False, skip_downloaded=False):
             _vprint(verbose, "url: " + url)
 
             output_file = os.path.join(c_dir, d + '_sync.zip')
+            print("output_file", output_file)
             if os.path.exists(output_file) and skip_downloaded:
                 _vprint(verbose, "File already downloaded, skipping.")
                 continue
