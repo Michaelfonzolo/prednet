@@ -27,7 +27,7 @@ else:
     except ImportError:
         imread, imresize = _use_skimage()
 
-from kitti_settings import *
+from kitti_settings import DATA_DIR
 
 def _vprint(verbose, string):
     if verbose:

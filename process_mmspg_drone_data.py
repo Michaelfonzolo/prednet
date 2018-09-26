@@ -28,6 +28,7 @@ PASSWORD  = "IH)cJ9c81*1H74kv"
 DESIRED_IM_SZ = (128, 160)
 DESIRED_FPS = 10
 
+# Download the data directly from the FTP server.
 def download_data():
     ftp = ftplib.FTP()
     ftp.connect(HOST_NAME)
@@ -51,22 +52,22 @@ def download_data():
             ftp.retrbinary("RETR " + video_name, video_file.write, blocksize=1024)
 
             video_file.close()
-
         ftp.cwd("/")
-
     ftp.quit()
 
 
+# Walk through the downloaded data directories and create hickle files
+# containing the numpy video array for each video (sized appropriately).
 def process_data():
-    _, splits, _ = os.walk(OUTPUT_DIR).next();
+    _, splits, _ = os.walk(OUTPUT_DIR).next()
     for split in splits:
         split_dir = os.path.join(OUTPUT_DIR, split)
-        _, dirs, _ = os.walk(split_dir).next();
+        _, dirs, _ = os.walk(split_dir).next()
         
         for dir in dirs:
             
             video_dir = os.path.join(split_dir, dir)
-            _, _, files = os.walk(video_dir).next();
+            _, _, files = os.walk(video_dir).next()
             if not len(files):
                 warnings.warn("No video file found in " + video_dir)
             
@@ -81,6 +82,8 @@ def process_data():
 
             hkl.dump(video_array, video_file[:-4] + ".hkl")
 
+# Given the name of a video_file to read, return the numpy array of
+# images corresponding to this video.
 def get_video_array(video_file):
     video_reader = imageio.get_reader(video_file, format="ffmpeg")
     meta_data = video_reader.get_meta_data()
@@ -98,6 +101,12 @@ def get_video_array(video_file):
     input_frame_index = 0
     while input_frame_index < video_reader.get_length() - 1:
         image = video_reader.get_data(int(input_frame_index))
+        # We just use the vanilla imresize here (without worrying about aspect ratio)
+        # because it looks similar enough to the original video that it won't cause any
+        # problems in the prednet training.
+
+        # NOTE: this *might* cause problems in prediction if the network somehow encodes
+        # aspect ratio information, but this is unlikely (and untested).
         resized_image = imresize(image, DESIRED_IM_SZ)
         images.append(resized_image)
 
@@ -109,6 +118,7 @@ def get_video_array(video_file):
 
     return video_array
 
+# Save a numpy video array as a bunch of image files.
 def save_video_array_as_images(video_file, video_array):
     video_name = video_file[:-4] if video_file.endswith(".mp4") else video_file
 
@@ -117,5 +127,5 @@ def save_video_array_as_images(video_file, video_array):
         imageio.imwrite(image_name, image)
 
 if __name__ == "__main__":
-    # download_data()
+    download_data()
     process_data()
