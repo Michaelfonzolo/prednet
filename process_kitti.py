@@ -35,11 +35,6 @@ def _vprint(verbose, string):
 
 
 desired_im_sz = (128, 160)
-categories = [
-    'city',
-    'residential', 
-    'road'
-    ]
 
 # Recordings used for validation and testing.
 # Were initially chosen randomly such that one of the city recordings was used for validation and one of each category was used for testing.
@@ -54,13 +49,12 @@ if not os.path.exists(DATA_DIR):
 
 
 # Download raw zip files by scraping KITTI website
-def download_data(verbose=False, skip_downloaded=False, only_download_road=False):
+def download_data(categories, verbose=False, skip_downloaded=False):
     base_dir = os.path.join(DATA_DIR, 'raw') + os.sep
     if not os.path.exists(base_dir): 
         os.mkdir(base_dir)
 
-    C = ['road'] if only_download_road else categories
-    for c in C:
+    for c in categories:
         url = 'http://www.cvlibs.net/datasets/kitti/raw_data.php?type=' + c
         r = requests.get(url)
         soup = BeautifulSoup(r.content, 'lxml')
@@ -206,11 +200,15 @@ if __name__ == '__main__':
     stop_short      = "--stop-short"      in args
     skip_downloaded = "--skip-downloaded" in args
 
-    # just temporary
-    only_download_road = "--only-road" in args
+    if "--categories" in args:
+        categories_index = args.index("--categories")
+        num_categories = int(args[categories_index + 1])
+        categories = args[categories_index + 2:categories_index+2+num_categories]
+    else:
+        categories = ["city", "residential", "road"]
 
     if not no_download:
-        download_data(verbose=verbose, skip_downloaded=skip_downloaded, only_download_road=only_download_road)
+        download_data(categories, verbose=verbose, skip_downloaded=skip_downloaded)
     if not no_extract:
         extract_data(verbose=verbose, stop_short=stop_short)
     process_data(verbose=verbose)
