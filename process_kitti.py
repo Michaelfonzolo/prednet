@@ -47,7 +47,6 @@ test_recordings = [
 if not os.path.exists(DATA_DIR): 
     os.mkdir(DATA_DIR)
 
-
 # Download raw zip files by scraping KITTI website
 def download_data(categories, verbose=False, skip_downloaded=False):
     base_dir = os.path.join(DATA_DIR, 'raw') + os.sep
@@ -91,7 +90,7 @@ def download_data(categories, verbose=False, skip_downloaded=False):
 
 
 # unzip images
-def extract_data(verbose=False, stop_short=False):
+def extract_data(categories, verbose=False, stop_short=False):
     _vprint(verbose, 'For c in categories...')
 
     error = 0
@@ -124,7 +123,7 @@ def extract_data(verbose=False, stop_short=False):
 
 # Create image datasets.
 # Processes images and saves them in train, val, test splits.
-def process_data(verbose=False):
+def process_data(categories, verbose=False):
     splits = {s: [] for s in ['train', 'test', 'val']}
     splits['val'] = val_recordings
     splits['test'] = test_recordings
@@ -149,8 +148,6 @@ def process_data(verbose=False):
             source_list += [category + '-' + folder] * len(files)
 
         print('Creating ' + split + ' data: ' + str(len(im_list)) + ' images')
-
-        # Michael Ala: X is an awful name, why not just "image_data"?
 
         # X is an array of image data, each image being a 3-dimensional array of
         # dimensions (img_width) x (img_height) x 3 (colour channels).
@@ -210,5 +207,5 @@ if __name__ == '__main__':
     if not no_download:
         download_data(categories, verbose=verbose, skip_downloaded=skip_downloaded)
     if not no_extract:
-        extract_data(verbose=verbose, stop_short=stop_short)
-    process_data(verbose=verbose)
+        extract_data(categories, verbose=verbose, stop_short=stop_short)
+    process_data(categories, verbose=verbose)
