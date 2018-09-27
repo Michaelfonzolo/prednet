@@ -54,12 +54,13 @@ if not os.path.exists(DATA_DIR):
 
 
 # Download raw zip files by scraping KITTI website
-def download_data(verbose=False, skip_downloaded=False):
+def download_data(verbose=False, skip_downloaded=False, only_download_road=False):
     base_dir = os.path.join(DATA_DIR, 'raw') + os.sep
     if not os.path.exists(base_dir): 
         os.mkdir(base_dir)
 
-    for c in categories:
+    C = ['road'] if only_download_road else categories
+    for c in C:
         url = 'http://www.cvlibs.net/datasets/kitti/raw_data.php?type=' + c
         r = requests.get(url)
         soup = BeautifulSoup(r.content, 'lxml')
@@ -205,8 +206,11 @@ if __name__ == '__main__':
     stop_short      = "--stop-short"      in args
     skip_downloaded = "--skip-downloaded" in args
 
+    # just temporary
+    only_download_road = "--only-road" in args
+
     if not no_download:
-        download_data(verbose=verbose, skip_downloaded=skip_downloaded)
+        download_data(verbose=verbose, skip_downloaded=skip_downloaded, only_download_road=only_download_road)
     if not no_extract:
         extract_data(verbose=verbose, stop_short=stop_short)
     process_data(verbose=verbose)
