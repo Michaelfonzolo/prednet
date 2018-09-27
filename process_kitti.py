@@ -144,7 +144,7 @@ def process_data(categories, verbose=False):
         for category, folder in splits[split]:
             im_dir = os.path.join(DATA_DIR, 'raw', category, folder, folder[:10], folder, 'image_03', 'data')
             _, _, files = os.walk(im_dir).next()
-            im_list += [im_dir + f for f in sorted(files)]
+            im_list += [os.path.join(im_dir, f) for f in sorted(files)]
             source_list += [category + '-' + folder] * len(files)
 
         print('Creating ' + split + ' data: ' + str(len(im_list)) + ' images')
