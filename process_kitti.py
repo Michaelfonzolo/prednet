@@ -45,9 +45,8 @@ categories = [
 # Were initially chosen randomly such that one of the city recordings was used for validation and one of each category was used for testing.
 val_recordings = [('city', '2011_09_26_drive_0005_sync')]
 test_recordings = [
-    ('city', '2011_09_26_drive_0104_sync'), 
-    # Michael Ala 6/25/2018: again, not enough space on drive
-    # ('residential', '2011_09_26_drive_0079_sync'), 
+    ('city', '2011_09_26_drive_0104_sync'),
+    ('residential', '2011_09_26_drive_0079_sync'), 
     ('road', '2011_09_26_drive_0070_sync')]
 
 if not os.path.exists(DATA_DIR): 
