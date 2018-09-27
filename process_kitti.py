@@ -93,7 +93,7 @@ def download_data(verbose=False, skip_downloaded=False):
             #                wget -O ./kitti_data/raw/<category>/<name>.zip <url>
             download_to_folder = os.path.join(c_dir, d + '_sync.zip')
             os.system('mkdir ' + download_to_folder)
-            os.sytem('wget -O ' + download_to_folder + url)
+            os.system('wget -O ' + download_to_folder + url)
 
 
 # unzip images
