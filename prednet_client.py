@@ -64,7 +64,7 @@ class PredNetClient(object):
             self.loss_weights_per_layer      = np.array(loss_weights_per_layer)
             self.number_of_timesteps         = number_of_timesteps
             self.loss_weights_per_timestep   = kwargs.get("loss_weights_per_timestep",  
-                np.array([0] + [1/(self.number_of_layers - 1) for i in range(self.number_of_timesteps - 1)]))
+                np.array([0] + [1.0/(self.number_of_timesteps - 1) for i in range(self.number_of_timesteps - 1)]))
 
             self.channels_first = channels_first if channels_first is not None else K.image_data_format()
 
@@ -277,6 +277,9 @@ class PredNetClient(object):
             return_sequences=True)
 
         inputs = Input(shape=(self.number_of_timesteps, ) + self.input_shape)
+
+        # The output will have shape (batch_size, nt, nb_layers). The outputs correspond
+        # to the errors at each time step and layer.
         errors = self.prednet_model(inputs)
 
         errors_by_time = TimeDistributed(
@@ -425,21 +428,19 @@ if __name__ == "__main__":
         training_file     ='./kitti_data/X_train.hkl',
         training_source   ='./kitti_data/sources_train.hkl',
         validation_file   = './kitti_data/X_val.hkl',
-        validation_source = './kitti_data/sources_val.hkl',
-        epochs            = 2,
-        number_of_validation_sequences = 1
+        validation_source = './kitti_data/sources_val.hkl'
     )
-
-    
 
     kitti_prednet = PredNetClient("kitti_prednet", training_params)
     kitti_prednet.build_model()
 
-    start_time = get_Time()
+    kitti_prednet.fit(test_mode=False)
 
-    try:
-        kitti_prednet.fit(test_mode=False)
-    except Exception as e:
-        errorTextSend(e.message)
+    # start_time = get_Time()
 
-    doneTextSend(start_time, get_Time(), "Training kitti_prednet")
+    # try:
+    #    kitti_prednet.fit(test_mode=False)
+    # except Exception as e:
+    #    errorTextSend(e.message)
+
+    # doneTextSend(start_time, get_Time(), "Training kitti_prednet")

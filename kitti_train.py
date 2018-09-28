@@ -51,7 +51,9 @@ def main(verbose=False):
     time_loss_weights = 1./ (nt - 1) * np.ones((nt,1))  # equally weight all timesteps except the first
     time_loss_weights[0] = 0
 
-
+    print("loss_weights_per_layer: " + str(layer_loss_weights))
+    print("loss_weights_per_timestep: " + str(time_loss_weights))
+    
     prednet = PredNet(stack_sizes, R_stack_sizes,
                     A_filt_sizes, Ahat_filt_sizes, R_filt_sizes,
                     output_mode='error', return_sequences=True)
@@ -134,13 +136,13 @@ def main(verbose=False):
             os.mkdir(WEIGHTS_DIR)
         callbacks.append(ModelCheckpoint(filepath=weights_file, monitor='val_loss', save_best_only=True))
 
-    history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
-                    validation_data=val_generator, validation_steps=N_seq_val / batch_size)
+    # history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
+    #                validation_data=val_generator, validation_steps=N_seq_val / batch_size)
 
-    if save_model:
-        json_string = model.to_json()
-        with open(json_file, "w") as f:
-            f.write(json_string)
+    # if save_model:
+    #    json_string = model.to_json()
+    #    with open(json_file, "w") as f:
+    #        f.write(json_string)
 
 if __name__ == "__main__":
     import sys
