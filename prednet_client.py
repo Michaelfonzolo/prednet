@@ -433,10 +433,11 @@ class PredNetClient(object):
 
 if __name__ == "__main__":
     training_params = PredNetClient.TrainingParameters(
-        training_file     ='./kitti_data/X_train.hkl',
-        training_source   ='./kitti_data/sources_train.hkl',
-        validation_file   = './kitti_data/X_val.hkl',
-        validation_source = './kitti_data/sources_val.hkl'
+        training_file        ='./kitti_data/X_train.hkl',
+        training_source      ='./kitti_data/sources_train.hkl',
+        validation_file      = './kitti_data/X_val.hkl',
+        validation_source    = './kitti_data/sources_val.hkl',
+        max_training_samples = 3000
     )
 
     kitti_prednet = PredNetClient("kitti_prednet", training_params)
