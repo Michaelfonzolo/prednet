@@ -80,6 +80,7 @@ class PredNetClient(object):
                      number_of_validation_sequences=100,
                      optimizer='adam',
                      learning_rate_scheduler='default',
+                     max_training_samples=30000,
                      **kwargs):
 
             # Only (training_file and training_source) or (training_files) can be specified, but
@@ -136,6 +137,7 @@ class PredNetClient(object):
             self.learning_rate_scheduler = learning_rate_scheduler
 
             self.number_of_validation_sequences = number_of_validation_sequences
+            self.max_training_samples = max_training_samples
 
     """
     A class which bundles the save parameters of a PredNetClient object.
@@ -213,6 +215,8 @@ class PredNetClient(object):
     def learning_rate_scheduler(self):        return self.train_params.learning_rate_scheduler
     @property
     def number_of_validation_sequences(self): return self.train_params.number_of_validation_sequences
+    @property
+    def max_training_samples(self):           return self.train_params.max_training_samples
     
     @property
     def save_weights(self):                   return self.save_params.save_weights
@@ -310,6 +314,7 @@ class PredNetClient(object):
                 self.number_of_timesteps,
                 batch_size=self.batch_size,
                 shuffle=True,
+                max_training_samples=self.max_training_samples,
                 data_file=self.training_file,
                 source_file=self.training_source
             )
@@ -318,6 +323,7 @@ class PredNetClient(object):
                 self.number_of_timesteps, 
                 batch_size=self.batch_size, 
                 shuffle=True,
+                max_training_samples=self.max_training_samples,
                 data_files=self.training_files
             )
 
@@ -326,6 +332,7 @@ class PredNetClient(object):
                 self.number_of_timesteps,
                 batch_size=self.batch_size,
                 N_seq=self.number_of_validation_sequences,
+                max_training_samples=self.max_training_samples,
                 data_file=self.validation_file,
                 source_file=self.validation_source
             )
@@ -334,6 +341,7 @@ class PredNetClient(object):
                 self.number_of_timesteps,
                 batch_size=self.batch_size,
                 N_seq=self.number_of_validation_sequences,
+                max_training_samples=self.max_training_samples,
                 data_files=self.validation_files
             )
         else:
@@ -434,13 +442,11 @@ if __name__ == "__main__":
     kitti_prednet = PredNetClient("kitti_prednet", training_params)
     kitti_prednet.build_model()
 
-    kitti_prednet.fit(test_mode=False)
+    start_time = get_Time()
 
-    # start_time = get_Time()
+    try:
+        kitti_prednet.fit(test_mode=False)
+    except Exception as e:
+        errorTextSend(e.message)
 
-    # try:
-    #    kitti_prednet.fit(test_mode=False)
-    # except Exception as e:
-    #    errorTextSend(e.message)
-
-    # doneTextSend(start_time, get_Time(), "Training kitti_prednet")
+    doneTextSend(start_time, get_Time(), "Training kitti_prednet")
