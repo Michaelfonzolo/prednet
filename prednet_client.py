@@ -305,7 +305,7 @@ class PredNetClient(object):
         
         self.model_built = True
 
-    def fit(self, test_mode=True):
+    def fit(self):
         if not self.model_built:
             raise Exception("PredNetClient model must be built first.")
 
@@ -368,9 +368,6 @@ class PredNetClient(object):
                 )
             )
 
-        if test_mode:
-            return
-
         if val_generator is None:
             self.history = self.model.fit_generator(
                 training_generator,
@@ -432,6 +429,22 @@ class PredNetClient(object):
         #     the forward and backward pass
 
 if __name__ == "__main__":
+    data_directory = os.path.join("kaust_uav123_data", "UAV123_10fps", "data_seq", "UAV123_10fps")
+    training_files = [os.path.join(data_directory, seq, seq+".hkl") for seq in os.listdir(data_directory)]
+
+    training_params = PredNetClient.TrainingParameters(training_files = training_files)
+
+    uav123_prednet = PredNetClient("uav123_prednet", training_params)
+    uav123_prednet.build_model()
+
+    try:
+        uav123_prednet.fit()
+    except Exception as e:
+        errorTextSend(e.message)
+
+    doneTextSend(start_time, get_Time(), "Training " + uav123_prednet.name)
+
+"""
     training_params = PredNetClient.TrainingParameters(
         training_file        ='./kitti_data/X_train.hkl',
         training_source      ='./kitti_data/sources_train.hkl',
@@ -445,11 +458,10 @@ if __name__ == "__main__":
 
     start_time = get_Time()
 
-    # kitti_prednet.fit(test_mode=False)
-
     try:
-         kitti_prednet.fit(test_mode=False)
+         kitti_prednet.fit()
     except Exception as e:
          errorTextSend(e.message)
 
     doneTextSend(start_time, get_Time(), "Training kitti_prednet")
+"""
