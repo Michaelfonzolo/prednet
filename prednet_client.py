@@ -445,9 +445,11 @@ if __name__ == "__main__":
 
     start_time = get_Time()
 
-    try:
-        kitti_prednet.fit(test_mode=False)
-    except Exception as e:
-        errorTextSend(e.message)
+    kitti_prednet.fit(test_mode=False)
+
+    # try:
+    #     kitti_prednet.fit(test_mode=False)
+    # except Exception as e:
+    #     errorTextSend(e.message)
 
     doneTextSend(start_time, get_Time(), "Training kitti_prednet")
