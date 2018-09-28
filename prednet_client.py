@@ -437,7 +437,7 @@ if __name__ == "__main__":
         training_source      ='./kitti_data/sources_train.hkl',
         validation_file      = './kitti_data/X_val.hkl',
         validation_source    = './kitti_data/sources_val.hkl',
-        max_training_samples = 11
+        max_training_samples = 30000
     )
 
     kitti_prednet = PredNetClient("kitti_prednet", training_params)
@@ -445,11 +445,11 @@ if __name__ == "__main__":
 
     start_time = get_Time()
 
-    kitti_prednet.fit(test_mode=False)
+    # kitti_prednet.fit(test_mode=False)
 
-    # try:
-    #     kitti_prednet.fit(test_mode=False)
-    # except Exception as e:
-    #     errorTextSend(e.message)
+    try:
+         kitti_prednet.fit(test_mode=False)
+    except Exception as e:
+         errorTextSend(e.message)
 
     doneTextSend(start_time, get_Time(), "Training kitti_prednet")
