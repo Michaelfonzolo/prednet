@@ -163,10 +163,13 @@ class PredNetClient(object):
             self.checkpoint_period  = checkpoint_period
         
         def _fix_file_names(self, model_name):
+            # Appending "model_" to the front of the directory for the model's weight.hdf5
+            # and model.json file is just convention so that we can ignore all folders
+            # of the form model_*/ in the .gitignore
             if self.weights_file is None:
-                self.weights_file = os.path.join(model_name, 'weights.hdf5')
+                self.weights_file = os.path.join("model_" + model_name, 'weights.hdf5')
             if self.model_file is None:
-                self.model_file = os.path.join(model_name, 'model.json')
+                self.model_file = os.path.join("model_" + model_name, 'model.json')
 
     @property
     def input_spatial_dimensions(self):       return self.model_params.input_spatial_dimensions
@@ -405,7 +408,7 @@ class PredNetClient(object):
             # list, so it' length will be it's original length minus i.
             j = random.randint(0, N - 1 - i)
             validation_files.append(self.training_files[j])
-            self.training_files.remove(j)
+            del self.training_files[j]
         self.train_params.validation_files = validation_files
 
     def visualize_dimensionality(self):
@@ -436,6 +439,9 @@ if __name__ == "__main__":
 
     uav123_prednet = PredNetClient("uav123_prednet", training_params)
     uav123_prednet.build_model()
+    uav123_prednet.cross_validate(validation_split=0.025)
+
+    start_time = get_Time()
 
     try:
         uav123_prednet.fit()

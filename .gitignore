@@ -1,9 +1,11 @@
-# Ignore kitti_data folder
+# Ignore training data folders
 kitti_data/
-kitti_results/
-model_data_keras2/
 mmspg_drone_data/
 kaust_uav123_data/
+
+# Ignore model output folders
+kitti_results/
+model_*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
