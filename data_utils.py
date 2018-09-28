@@ -100,10 +100,10 @@ class SequenceGenerator(Iterator):
         return batch_x, batch_y
 
     def preprocess(self, X):
-        return X.astype(np.float32) / 255
+        return X.astype(np.float16) / 255
 
     def create_all(self):
-        X_all = np.zeros((self.N_sequences, self.nt) + self.im_shape, np.float32)
+        X_all = np.zeros((self.N_sequences, self.nt) + self.im_shape, np.float16)
         for i, idx in enumerate(self.possible_starts):
             X_all[i] = self.preprocess(self.X[idx:idx+self.nt])
         return X_all
