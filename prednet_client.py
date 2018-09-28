@@ -425,8 +425,12 @@ if __name__ == "__main__":
         training_file     ='./kitti_data/X_train.hkl',
         training_source   ='./kitti_data/sources_train.hkl',
         validation_file   = './kitti_data/X_val.hkl',
-        validation_source = './kitti_data/sources_val.hkl'
+        validation_source = './kitti_data/sources_val.hkl',
+        epochs            = 2,
+        number_of_validation_sequences = 1
     )
+
+    
 
     kitti_prednet = PredNetClient("kitti_prednet", training_params)
     kitti_prednet.build_model()
@@ -434,7 +438,7 @@ if __name__ == "__main__":
     start_time = get_Time()
 
     try:
-        kitti_prednet.fit()
+        kitti_prednet.fit(test_mode=False)
     except Exception as e:
         errorTextSend(e.message)
 
