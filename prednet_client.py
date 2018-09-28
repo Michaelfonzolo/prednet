@@ -437,7 +437,7 @@ if __name__ == "__main__":
         training_source      ='./kitti_data/sources_train.hkl',
         validation_file      = './kitti_data/X_val.hkl',
         validation_source    = './kitti_data/sources_val.hkl',
-        max_training_samples = 3000
+        max_training_samples = 11
     )
 
     kitti_prednet = PredNetClient("kitti_prednet", training_params)
