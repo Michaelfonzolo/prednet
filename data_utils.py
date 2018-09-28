@@ -44,6 +44,7 @@ class SequenceGenerator(Iterator):
 
         self.max_training_samples = max_training_samples
         self.X = self.X[:max_training_samples]
+        self.sources = self.sources[:max_training_samples]
 
         self.nt = nt
         self.batch_size = batch_size
