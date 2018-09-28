@@ -123,8 +123,8 @@ def main(verbose=False):
         # print("session_kwargs: ", training_function.session_kwargs)
         # print("updates_op: ", training_function.updates_op)
 
-    train_generator = SequenceGenerator(train_file, train_sources, nt, batch_size=batch_size, shuffle=True)
-    val_generator = SequenceGenerator(val_file, val_sources, nt, batch_size=batch_size, N_seq=N_seq_val)
+    train_generator = SequenceGenerator(nt, batch_size=batch_size, shuffle=True, data_file=train_file, source_file=train_sources)
+    val_generator = SequenceGenerator(nt, batch_size=batch_size, N_seq=N_seq_val, data_file=val_file, source_file=val_sources)
 
     # start with lr of 0.001 and then drop to 0.0001 after 75 epochs
     lr_schedule = lambda epoch: 0.001 if epoch < 75 else 0.0001

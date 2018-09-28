@@ -1,3 +1,4 @@
+from collections import Iterable
 import hickle as hkl
 import numpy as np
 from keras import backend as K
@@ -5,18 +6,42 @@ from keras.preprocessing.image import Iterator
 
 # Data generator that creates sequences for input into PredNet.
 class SequenceGenerator(Iterator):
-    def __init__(self, data_file, source_file, nt,
-                 batch_size=8, shuffle=False, seed=None,
+    def __init__(self, nt, batch_size=8, shuffle=False, seed=None,
                  output_mode='error', sequence_start_mode='all', N_seq=None,
-                 data_format=K.image_data_format()):
+                 data_format=K.image_data_format(), **kwargs):
         
-        # X.shape will be (n_images, nb_cols, nb_rows, nb_channels)
-        # (after transposition if K.image_data_format() is 'channels_first')
-        self.X = hkl.load(data_file)
+        # Only (data_file and source_file) or (data_files) can be specified, but
+        # not both simultaneously.
+        if "data_files" in kwargs:
+            # Note: "source_files" isn't actually an accepted key word parameter, but we guard against it regardless.
+            assert ("source_file" not in kwargs) and ("source_files" not in kwargs), \
+                "When supplying multiple data_files, the data_file names are used as the source_files."
+            assert "data_file" not in kwargs, \
+                "data_file and data_files cannot be supplied simultaneously."
+        else:
+            assert "data_files" not in kwargs, \
+                "data_file and data_files cannot be supplied simultaneously."
 
-        # source for each image so when creating sequences can assure that 
-        # consecutive frames are from same video
-        self.sources = hkl.load(source_file)
+        if "data_files" in kwargs:
+            _X = []
+            _sources = []
+            for file in kwargs["data_files"]:
+                file_array = hkl.load(file)
+                _X.append(file_array)
+                _sources.extend([file] * file_array.shape[0])
+
+            # The elements of _X will be arrays of image arrays, so concatenating
+            # along axis=0 (default) simply creates a big array with every image
+            # from every data_file listed along the 0th axis.
+            self.X = np.concatenate(_X)
+            self.sources = _sources
+        else:
+            self.X = hkl.load(kwargs["data_file"])
+
+            # source for each image so when creating sequences can assure that 
+            # consecutive frames are from same video
+            self.sources = hkl.load(kwargs["source_file"])
+
         self.nt = nt
         self.batch_size = batch_size
         self.data_format = data_format
