@@ -8,7 +8,7 @@ from keras.preprocessing.image import Iterator
 class SequenceGenerator(Iterator):
     def __init__(self, nt, batch_size=8, shuffle=False, seed=None,
                  output_mode='error', sequence_start_mode='all', N_seq=None,
-                 data_format=K.image_data_format(), **kwargs):
+                 data_format=K.image_data_format(), max_training_samples=30000, **kwargs):
         
         # Only (data_file and source_file) or (data_files) can be specified, but
         # not both simultaneously.
@@ -41,6 +41,9 @@ class SequenceGenerator(Iterator):
             # source for each image so when creating sequences can assure that 
             # consecutive frames are from same video
             self.sources = hkl.load(kwargs["source_file"])
+
+        self.max_training_samples = max_training_samples
+        self.X = self.X[:max_training_samples]
 
         self.nt = nt
         self.batch_size = batch_size
