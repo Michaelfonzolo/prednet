@@ -624,7 +624,7 @@ class PredNetClient(object):
             X_test = np.transpose(X_test, (0, 1, 3, 4, 2))
             X_hat  = np.transpose(X_hat, (0, 1, 3, 4, 2))
 
-        mse_model = np.mean(X_test[:,1:] - X_hat[:,1:])**2) # MSE for all timesteps except the first
+        mse_model = np.mean((X_test[:,1:] - X_hat[:,1:])**2) # MSE for all timesteps except the first
         mse_prev  = np.mean((X_test[:,:-1] - X_test[:,1])**2)
 
         if output_file_name is None:
