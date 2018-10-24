@@ -12,14 +12,14 @@ class SequenceGenerator(Iterator):
         
         # Only (data_file and source_file) or (data_files) can be specified, but
         # not both simultaneously.
-        if "data_files" in kwargs:
+        if kwargs.get("data_files") is not None:
             # Note: "source_files" isn't actually an accepted key word parameter, but we guard against it regardless.
-            assert ("source_file" not in kwargs) and ("source_files" not in kwargs), \
+            assert kwargs.get("source_file") is None and kwargs.get("source_files") is None, \
                 "When supplying multiple data_files, the data_file names are used as the source_files."
-            assert "data_file" not in kwargs, \
+            assert kwargs.get("data_file") is None, \
                 "data_file and data_files cannot be supplied simultaneously."
         else:
-            assert "data_files" not in kwargs, \
+            assert kwargs.get("data_files") is None, \
                 "data_file and data_files cannot be supplied simultaneously."
 
         if "data_files" in kwargs:

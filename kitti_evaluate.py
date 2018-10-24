@@ -47,7 +47,13 @@ inputs = Input(shape=tuple(input_shape))
 predictions = test_prednet(inputs)
 test_model = Model(inputs=inputs, outputs=predictions)
 
-test_generator = SequenceGenerator(test_file, test_sources, nt, sequence_start_mode='unique', data_format=data_format)
+test_generator = SequenceGenerator( 
+    nt, 
+    sequence_start_mode='unique', 
+    data_format=data_format,
+    data_file=test_file, 
+    source_file=test_sources
+    )
 X_test = test_generator.create_all()
 X_hat = test_model.predict(X_test, batch_size)
 if data_format == 'channels_first':
