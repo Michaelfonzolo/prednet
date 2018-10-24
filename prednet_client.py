@@ -377,7 +377,7 @@ class PredNetClient(object):
             inputs = Input(shape=tuple(input_shape))
 
             predictions = evaluation_prednet(inputs)
-            self.model = Model(inputs=inputs, outptus=predictions)
+            self.model = Model(inputs=inputs, outputs=predictions)
             self._built = True
             self._trained = True
 
