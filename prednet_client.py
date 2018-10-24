@@ -656,7 +656,7 @@ class PredNetClient(object):
     #     the forward and backward pass
 
 if __name__ == "__main__":
-"""
+    """
     training_params = PredNetClient.TrainingParameters(
         training_file        = './kitti_data/X_train.hkl',
         training_source      = './kitti_data/sources_train.hkl',
@@ -676,9 +676,9 @@ if __name__ == "__main__":
          errorTextSend(e.message)
 
     doneTextSend(start_time, get_Time(), "Training kitti_prednet")
-"""
+    """
 
-"""
+    """
     data_directory = os.path.join("kaust_uav123_data", "UAV123_10fps", "data_seq", "UAV123_10fps")
     training_files = [os.path.join(data_directory, seq, seq+".hkl") for seq in os.listdir(data_directory)]
 
@@ -696,7 +696,7 @@ if __name__ == "__main__":
         errorTextSend(e.message)
 
     doneTextSend(start_time, get_Time(), "Training " + uav123_prednet.name)
-"""
+    """
     data_directory = os.path.join("kaust_uav123_data", "UAV123_10fps", "data_seq", "UAV123_10fps")
     test_files = [os.path.join(data_directory, seq, seq+".hkl") for seq in os.listdir(data_directory)]
     model = PredNetClient.load("uav123_prednet", test_files = test_files)
