@@ -299,10 +299,10 @@ class PredNetClient(object):
     @property
     def built(self): return self._built
     @property
-    def trained(self): return self_trained
+    def trained(self): return self._trained
 
     @staticmethod
-    def load(self, model_name, time_steps=10, **kwargs):
+    def load(model_name, time_steps=10, **kwargs):
         model_file = kwargs.get("model_file")
         weights_file = kwargs.get("weights_file")
 
@@ -608,18 +608,18 @@ class PredNetClient(object):
 
     def compare_MSE_prediction_vs_last_frame(self, output_file_name=None):
         test_generator = SequenceGenerator(
-            self.number_of_time_steps,
+            self.number_of_timesteps,
             sequence_start_mode="unique",
-            data_format=data_format,
+            data_format="channels_first" if self.channels_first else "channels_last",
             **{
                 "data_file" : self._evaluation_test_file,
-                "source_file" : self._evaluation_source_file,
+                "source_file" : self._evaluation_test_source,
                 "data_files" : self._evaluation_test_files
             }
         )
 
         X_test = test_generator.create_all()
-        X_hat  = self.model.predict(X_test, self.number_of_time_steps)
+        X_hat  = self.model.predict(X_test, self.number_of_timesteps)
         if self.channels_first:
             X_test = np.transpose(X_test, (0, 1, 3, 4, 2))
             X_hat  = np.transpose(X_hat, (0, 1, 3, 4, 2))
