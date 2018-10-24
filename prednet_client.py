@@ -627,14 +627,15 @@ class PredNetClient(object):
         mse_model = np.mean((X_test[:,1:] - X_hat[:,1:])**2) # MSE for all timesteps except the first
         mse_prev  = np.mean((X_test[:,:-1] - X_test[:,1])**2)
 
-        if output_file_name is None:
-            print("Model MSE: %f" % mse_model)
-            print("Previous Frame MSE: %f" % mse_prev)
+        print("Model MSE: %f" % mse_model)
+        print("Previous Frame MSE: %f" % mse_prev)
 
-        else:
+        if output_file_name is not None:
             with open(output_file_name, 'w') as output_file:
                 output_file.write("Model MSE: %f\n" % mse_model)
                 output_file.write("Previous Frame MSE: %f" % mse_prev)
+
+        return mse_model, mse_prev
 
     def visualize_dimensionality(self):
         pass
@@ -698,6 +699,10 @@ if __name__ == "__main__":
     doneTextSend(start_time, get_Time(), "Training " + uav123_prednet.name)
     """
     data_directory = os.path.join("kaust_uav123_data", "UAV123_10fps", "data_seq", "UAV123_10fps")
-    test_files = [os.path.join(data_directory, seq, seq+".hkl") for seq in os.listdir(data_directory)]
+    all_files = [os.path.join(data_directory, seq, seq+".hkl") for seq in os.listdir(data_directory)]
+
+    proportion = 0.1
+    test_files = random.shuffle(all_files)[:int(proportion * len(all_files))+1]
+
     model = PredNetClient.load("uav123_prednet", test_files = test_files)
-    model.compare_MSE_prediction_vs_last_frame()
+    model.compare_MSE_prediction_vs_last_frame("uav123_prednet_mse.txt")
