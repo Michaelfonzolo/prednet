@@ -702,7 +702,13 @@ if __name__ == "__main__":
     all_files = [os.path.join(data_directory, seq, seq+".hkl") for seq in os.listdir(data_directory)]
 
     proportion = 0.1
-    test_files = random.shuffle(all_files)[:int(proportion * len(all_files))+1]
+    test_files = all_files[:]
+    random.shuffle(test_files)
+    test_files = test_files[:int(proportion * len(all_files))+1]
+
+    start_time = get_Time()
 
     model = PredNetClient.load("uav123_prednet", test_files = test_files)
     model.compare_MSE_prediction_vs_last_frame("uav123_prednet_mse.txt")
+
+    doneTextSend(start_time, get_Time(), "MSE comparison")
