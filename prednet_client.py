@@ -353,7 +353,7 @@ class PredNetClient(object):
 
             if not self._evaluation_test_files:
                 assert self._evaluation_test_file and self._evaluation_test_source, \
-                    "test_file and test_source must be supplied simultaneously".
+                    "test_file and test_source must be supplied simultaneously."
 
             model_file = kwargs["_model_file"]
             weights_file = kwargs["_weights_file"]
